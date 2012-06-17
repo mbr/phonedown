@@ -128,7 +128,7 @@ if __name__ == '__main__':
     print "Converting from %s to %s" % (args.source_folder, args.dest_folder)
     print "Using %d workers to process %.2fM" % (
         args.pool_size,
-        total_size % 1024 * 1024
+        total_size / (1024 * 1024)
     )
 
     pool = Pool(args.pool_size, ignore_sigint)
