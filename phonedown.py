@@ -11,6 +11,7 @@ import sys
 
 from mutagen.flac import FLAC
 from mutagen import File
+import progressbar
 
 
 status_queue = Queue()
@@ -79,11 +80,11 @@ def convert_file(args, full_path):
             id3data[attr] = metadata.get(attr)
         id3data.save()
     except Exception, e:
-        status_queue.put('ERROR: %r (%s)' % (e, out_path))
+        status_queue.put(('ERROR', full_path, str(e)))
         if os.path.exists(out_path):
             os.unlink(out_path)
     else:
-        status_queue.put('OK: %s' % out_path)
+        status_queue.put(('OK', full_path, out_path))
 
 
 def list_files(args):
@@ -109,30 +110,50 @@ def ignore_sigint():
 if __name__ == '__main__':
     args = parser.parse_args()
 
+    sizes = {}
+    total_size = 0
+    bytes_processed = 0
+
+    for _, full_path in list_files(args):
+        filesize = os.stat(full_path).st_size
+        sizes[full_path] = filesize
+        total_size += filesize
+
     print "Converting from %s to %s" % (args.source_folder, args.dest_folder)
-    print "Pool size", args.pool_size
+    print "Using %d workers to process %.2fM" % (
+        args.pool_size,
+        total_size % 1024 * 1024
+    )
 
     pool = Pool(args.pool_size, ignore_sigint)
-    total = 0
 
     try:
         res = pool.map_async(_convert_file_args, list_files(args))
+        pbar = progressbar.ProgressBar(
+        widgets=[
+            'Encoding: ', progressbar.AnimatedMarker(),
+            progressbar.Percentage(), ' ', progressbar.Bar(marker='*'),
+            ' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()],
+        maxval=total_size).start()
 
         for c in cycle(('-', '\\', '|', '/')):
-            sys.stdout.write(c)
-            sys.stdout.flush()
             res.wait(0.1)
-            sys.stdout.write('\b')
             try:
                 while True:
-                    sys.stdout.write(status_queue.get_nowait())
-                    sys.stdout.write('\n')
-                    sys.stdout.flush()
+                    status, filename, info = status_queue.get_nowait()
+                    if 'ERROR' == status:
+                        print >>sys.stderr, "ERROR: %s (%s)" % (info, filename)
+
+                    bytes_processed += sizes[filename]
+                    pbar.update(bytes_processed)
             except Empty:
                 pass
 
             if res.ready():
+                pbar.finish()
                 break
+
+            pbar.update()
 
     except KeyboardInterrupt:
         print >>sys.stderr, "exiting..."
