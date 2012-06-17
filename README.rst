@@ -3,7 +3,7 @@ Phonedown
 
 This is a small tool that converts my .flac collection to small MP3s suitable
 for copying onto the non-expandable memory of my phone (where it gets
-  afterwards via `Dropbox <http://dropbox.com>`_.
+afterwards via `Dropbox <http://dropbox.com>`_).
 
 It uses the lame, flac and mp3gain commandline utilities and the libraries
 ``progressbar`` and ``mutagen``.
