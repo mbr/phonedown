@@ -31,7 +31,7 @@ parser.add_argument('source_folder', type=folder)
 parser.add_argument('dest_folder', type=folder)
 parser.add_argument('-e', '--extensions', nargs='+', default=['.flac'])
 parser.add_argument('-p', '--pool-size', type=int,
-                    default=2 * cpu_count())
+                    default=1 + cpu_count())
 parser.add_argument('lame_options', nargs=argparse.REMAINDER)
 parser.add_argument('--no-mp3gain', action='store_false', dest='apply_mp3gain',
                     default=True)
