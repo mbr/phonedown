@@ -77,7 +77,7 @@ def convert_file(args, full_path):
 
         # now apply gain
         if args.apply_mp3gain:
-            mp3gain_cmd = [args.mp3gain, '-q', '-T', '-r', out_path]
+            mp3gain_cmd = [args.mp3gain, '-q', '-T', '-r', '-k', out_path]
 
             subprocess.check_call(mp3gain_cmd, stdout=open('/dev/null', 'wb'))
 
