@@ -35,6 +35,8 @@ parser.add_argument('-p', '--pool-size', type=int,
 parser.add_argument('lame_options', nargs=argparse.REMAINDER)
 parser.add_argument('--no-mp3gain', action='store_false', dest='apply_mp3gain',
                     default=True)
+parser.add_argument('--no-skip', action='store_false', dest='skip_existing',
+                    default=True)
 parser.add_argument('--lame', default='lame')
 parser.add_argument('--flac', default='flac')
 parser.add_argument('--mp3gain', default='mp3gain')
@@ -102,6 +104,10 @@ def list_files(args):
                 # ignore unknown extensions
                 continue
 
+            if args.skip_existing and\
+               os.path.exists(get_out_path(args, full_path)):
+                continue
+
             yield args, full_path
 
 
@@ -126,6 +132,11 @@ if __name__ == '__main__':
         total_size += filesize
 
     print "Converting from %s to %s" % (args.source_folder, args.dest_folder)
+
+    if not sizes:
+        print "Nothing to be done"
+        sys.exit(0)
+
     print "Using %d workers to process %.2fM" % (
         args.pool_size,
         total_size / (1024 * 1024)
