@@ -40,11 +40,17 @@ parser.add_argument('--flac', default='flac')
 parser.add_argument('--mp3gain', default='mp3gain')
 
 
+def get_out_path(args, full_path):
+    rel_path = os.path.relpath(full_path, args.source_folder)
+    base, ext = os.path.splitext(rel_path)
+    out_path = os.path.join(args.dest_folder, base + '.mp3')
+
+    return out_path
+
+
 def convert_file(args, full_path):
     try:
-        rel_path = os.path.relpath(full_path, args.source_folder)
-        base, ext = os.path.splitext(rel_path)
-        out_path = os.path.join(args.dest_folder, base + '.mp3')
+        out_path = get_out_path(args, full_path)
 
         lame_options = args.lame_options or ['--preset', 'standard', '-h']
 
