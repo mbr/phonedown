@@ -4,14 +4,14 @@ import argparse
 import os
 from itertools import cycle
 from multiprocessing import Pool, cpu_count, Queue
-from Queue import Empty
+from queue import Empty
 import signal
 import subprocess
 import sys
 
+import click
 from mutagen.flac import FLAC
 from mutagen import File
-import progressbar
 
 status_queue = Queue()
 
@@ -63,7 +63,7 @@ def convert_file(args, full_path):
 
         try:
             os.makedirs(os.path.dirname(out_path))
-        except OSError, e:
+        except OSError as e:
             if e.errno != 17:
                 raise  # only raise if not "file exists" error
 
@@ -91,7 +91,7 @@ def convert_file(args, full_path):
                      'tracknumber'):
             id3data[attr] = metadata.get(attr)
         id3data.save()
-    except Exception, e:
+    except Exception as e:
         status_queue.put(('ERROR', full_path, str(e)))
         if os.path.exists(out_path):
             os.unlink(out_path)
@@ -135,25 +135,25 @@ if __name__ == '__main__':
         sizes[full_path] = filesize
         total_size += filesize
 
-    print "Converting from %s to %s" % (args.source_folder, args.dest_folder)
+    print("Converting from %s to %s" % (args.source_folder, args.dest_folder))
 
     if not sizes:
-        print "Nothing to be done"
+        print("Nothing to be done")
         sys.exit(0)
 
-    print "Using %d workers to process %.2fM" % (args.pool_size,
-                                                 total_size / (1024 * 1024))
+    print("Using %d workers to process %.2fM" % (args.pool_size,
+                                                 total_size / (1024 * 1024)))
 
     pool = Pool(args.pool_size, ignore_sigint)
 
     try:
         res = pool.map_async(_convert_file_args, list_files(args))
-        pbar = progressbar.ProgressBar(widgets=[
-            'Encoding: ', progressbar.AnimatedMarker(), progressbar.Percentage(
-            ), ' ', progressbar.Bar(marker='*'), ' ', progressbar.ETA(
-            ), ' ', progressbar.FileTransferSpeed()
-        ],
-                                       maxval=total_size).start()
+        # pbar = progressbar.ProgressBar(widgets=[
+        #     'Encoding: ', progressbar.AnimatedMarker(), progressbar.Percentage(
+        #     ), ' ', progressbar.Bar(marker='*'), ' ', progressbar.ETA(
+        #     ), ' ', progressbar.FileTransferSpeed()
+        # ],
+        #                                maxval=total_size).start()
 
         for c in cycle(('-', '\\', '|', '/')):
             res.wait(0.1)
@@ -161,22 +161,22 @@ if __name__ == '__main__':
                 while True:
                     status, filename, info = status_queue.get_nowait()
                     if 'ERROR' == status:
-                        print >> sys.stderr, "ERROR: %s (%s)" % (info,
-                                                                 filename)
+                        print("ERROR: %s (%s)" % (info, filename),
+                              file=sys.stderr)
 
                     bytes_processed += sizes[filename]
-                    pbar.update(bytes_processed)
+                    # pbar.update(bytes_processed)
             except Empty:
                 pass
 
             if res.ready():
-                pbar.finish()
+                # pbar.finish()
                 break
 
-            pbar.update()
+            # pbar.update()
 
     except KeyboardInterrupt:
-        print >> sys.stderr, "exiting..."
+        print("exiting...", file=sys.stderr)
         pool.terminate()
         pool.join()
-        print "done"
+        print("done", file=sys.stderr)
