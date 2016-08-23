@@ -1,12 +1,15 @@
 Phonedown
 *********
 
-This is a small tool that converts my .flac collection to small MP3s suitable
-for copying onto the non-expandable memory of my phone (where it gets
-afterwards via `Dropbox <http://dropbox.com>`_).
+**DEPRECATED**: I am no longer using phonedown, as `beets.io
+<http://beets.io/>`_ replaces almost all of its functionality and adds more
+useful features
 
-It uses the lame, flac and mp3gain commandline utilities and the libraries
-``progressbar`` and ``mutagen``.
+This is a small tool that converts my .flac collection to small MP3s suitable
+for copying onto the non-expandable memory of my phone.
+
+It uses the lame, flac and mp3gain commandline utilities and the ``mutagen``
+library.
 
 Features:
 
