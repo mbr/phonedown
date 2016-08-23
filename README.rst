@@ -3,7 +3,8 @@ Phonedown
 
 **DEPRECATED**: I am no longer using phonedown, as `beets.io
 <http://beets.io/>`_ replaces almost all of its functionality and adds more
-useful features
+useful features using its `convert
+<http://beets.readthedocs.io/en/latest/plugins/convert.html> plugin`_.
 
 This is a small tool that converts my .flac collection to small MP3s suitable
 for copying onto the non-expandable memory of my phone.
